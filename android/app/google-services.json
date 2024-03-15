@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485600347731",
+    "project_id": "todo-app-internship-takuyasaka",
+    "storage_bucket": "todo-app-internship-takuyasaka.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485600347731:android:ad27b0aa5bfaabf851e8a6",
+        "android_client_info": {
+          "package_name": "com.example.todo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRujMKat0ljFYweMPu733jYtMRgqkJpDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
