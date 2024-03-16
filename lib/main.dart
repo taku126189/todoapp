@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:todo_app/home_page.dart';
 import 'firebase_options.dart';
 
 import 'todo.dart';
@@ -24,22 +25,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ProviderScope(child: MyApp()));
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: false,
+  runApp(
+    ProviderScope(
+      child: MaterialApp(
+        theme: ThemeData(
+          useMaterial3: false,
+        ),
+        debugShowCheckedModeBanner: false,
+        home: const HomePage(),
       ),
-      debugShowCheckedModeBanner: false,
-      home: const Home(),
-    );
-  }
+    ),
+  );
 }
 
 class Home extends HookConsumerWidget {
@@ -55,6 +51,23 @@ class Home extends HookConsumerWidget {
       final enteredText = newTodoController.text;
 
       if (enteredText.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Icon(Icons.warning_rounded),
+              content: const Text('Please enter a new todo'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
         return;
       }
 
@@ -90,12 +103,27 @@ class Home extends HookConsumerWidget {
                   width: 60,
                   height: 40,
                   child: IconButton(
-                      onPressed: addItem,
-                      icon: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                      )),
-                )
+                    onPressed: addItem,
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                  width: 60,
+                  height: 40,
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.get_app,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ],
             ),
             //* for loop. var i = 0: the initial value. It repeats until the condition (i < todos.length) is met. i++: this increments i by 1 after each iteration
@@ -202,7 +230,7 @@ class TodoItem extends HookConsumerWidget {
           trailing: Checkbox(
             value: todo.completed,
             onChanged: (value) =>
-                ref.read(todoListProvider.notifier).toggle(todo.id),
+                ref.read(todoListProvider.notifier).toggle(todo.id, value!),
           ),
           //* If itemIsFocused is true (the user taps a ListTile item), take TextField; otherwise, take Text() as it is
           title: itemIsFocused

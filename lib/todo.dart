@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod/riverpod.dart';
@@ -19,7 +20,7 @@ class Todo with _$Todo {
     @Default(false) bool completed,
     required String createdAt,
   }) = _Todo;
-
+  //*  fromJson method is used for creating a Dart object from JSON data (Map). A necessary factory constructor for creating a new User instance
   factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
 }
 
@@ -37,15 +38,20 @@ class TodoList extends Notifier<List<Todo>> {
     final formattedNowDate = DateFormat.yMd().format(now);
     final formattedNowTime = DateFormat.jm().format(now);
     final formattedNowWithTime = '$formattedNowDate  $formattedNowTime';
+    final id = _uuid.v4();
+    final newTodo =
+        Todo(id: id, description: description, createdAt: formattedNowWithTime);
     //* Since your state is immutable, you are not allowed to do like this; state.add(todo). Instead, create a new list that contains a new items and previous items
     state = [
       ...state,
-      Todo(
-        id: _uuid
-            .v4(), //* Assigning a new unique id to a new todo here makes sense because each todo must have its id upon creation
-        description: description, createdAt: formattedNowWithTime,
-      ), //* Todo(id: ...) is a new todo item added. _uuid assigns a unique id to the id parameter of the new todo and description is passed to the parameter.
+      newTodo,
     ];
+    //* Instance Firestore
+    final db = FirebaseFirestore.instance;
+    //* Create Map<String, dynamic> for storing the data in firestore
+    final todo = newTodo.toJson();
+    //* Store data in firestore. Use set method instead of add because it allows overwrting the stored data. By adding id as document path, it can avoid overwriting the todo item added before
+    db.collection('todos').doc(id).set(todo);
   }
 
   void remove(Todo target) {
@@ -53,18 +59,33 @@ class TodoList extends Notifier<List<Todo>> {
     state = state
         .where((todo) => todo.id != target.id)
         .toList(); //* Your state is immutable, so you are making a new list
+
+    final db = FirebaseFirestore.instance;
+    db.collection('todos').doc(target.id).delete();
   }
 
-  void toggle(String id) {
+  void toggle(String id, bool completed) {
     state = [
       //* for loop. todo is every item in the list (state)
       for (final todo in state)
         if (todo.id ==
             id) //* if the id of todo in the existing list is equal to the id passed to this function, pass the same id and description to the todo, but flip completed.
-          todo.copyWith(completed: !todo.completed)
+          todo.copyWith(completed: completed)
         else
           todo, //* If the id passed to this functio is not equal to todo, leave it
     ];
+
+    final db = FirebaseFirestore.instance;
+
+    for (final todo in state) {
+      Map<String, dynamic> todoMap = {
+        'id': todo.id,
+        'description': todo.description,
+        'createdAt': todo.createdAt,
+        'completed': completed,
+      };
+      db.collection('todos').doc(id).update(todoMap);
+    }
   }
 
   void edit({required String id, required String description}) {
@@ -77,5 +98,17 @@ class TodoList extends Notifier<List<Todo>> {
         else
           todo,
     ];
+
+    final db = FirebaseFirestore.instance;
+
+    for (final todo in state) {
+      Map<String, dynamic> todoMap = {
+        'id': todo.id,
+        'description': description,
+        'createdAt': todo.createdAt,
+        'completed': todo.completed,
+      };
+      db.collection('todos').doc(id).update(todoMap);
+    }
   }
 }
