@@ -110,20 +110,6 @@ class Home extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(Radius.circular(4))),
-                  width: 60,
-                  height: 40,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.get_app,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
               ],
             ),
             //* for loop. var i = 0: the initial value. It repeats until the condition (i < todos.length) is met. i++: this increments i by 1 after each iteration
