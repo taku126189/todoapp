@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/main.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+import 'package:todo_app/screens/todo_screen.dart';
+
+class StartScreen extends StatelessWidget {
+  const StartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,7 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const Home(),
+                  builder: (context) => const TodoScreen(),
                 ));
               },
               child: const Text('From Firestore'),

@@ -6,8 +6,8 @@ import 'package:uuid/uuid.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 //* run build_runner for code generation (create source code). When you run dart run build_runner build, build_runner looks for the configuration files in your project (like build.yaml or build_config.dart) to determine what tasks to perform during the build. These tasks might include generating code using code generation libraries like json_serializable or freezed, compiling assets, or any other custom build steps you've defined.
-part 'todo.freezed.dart';
-part 'todo.g.dart';
+part '../todo.freezed.dart';
+part '../todo.g.dart';
 
 const _uuid = Uuid();
 
@@ -112,3 +112,8 @@ class TodoList extends Notifier<List<Todo>> {
     }
   }
 }
+
+//* Notifier type is TodoList, Value type is List<Todo>. TodoList.new is passed as the initial value
+final todoListProvider = NotifierProvider<TodoList, List<Todo>>(
+  () => TodoList(),
+);
