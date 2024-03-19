@@ -10,7 +10,8 @@ _$TodoImpl _$$TodoImplFromJson(Map<String, dynamic> json) => _$TodoImpl(
       description: json['description'] as String,
       id: json['id'] as String,
       completed: json['completed'] as bool? ?? false,
-      createdAt: json['createdAt'] as String,
+      createdAt: const DateTimeTimestampConverter()
+          .fromJson(json['createdAt'] as Timestamp),
     );
 
 Map<String, dynamic> _$$TodoImplToJson(_$TodoImpl instance) =>
@@ -18,5 +19,6 @@ Map<String, dynamic> _$$TodoImplToJson(_$TodoImpl instance) =>
       'description': instance.description,
       'id': instance.id,
       'completed': instance.completed,
-      'createdAt': instance.createdAt,
+      'createdAt':
+          const DateTimeTimestampConverter().toJson(instance.createdAt),
     };

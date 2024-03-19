@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+//* The import of 'package:cloud_firestore/cloud_firestore.dart' is unnecessary because all of the used elements are also provided by the import of 'package:todo_app/date_time_timestamp_converter.dart'.
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod/riverpod.dart';
+import 'package:todo_app/date_time_timestamp_converter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -18,8 +19,9 @@ class Todo with _$Todo {
     required String description,
     required String id,
     @Default(false) bool completed,
-    required String createdAt,
+    @DateTimeTimestampConverter() required DateTime createdAt,
   }) = _Todo;
+
   //*  fromJson method is used for creating a Dart object from JSON data (Map). A necessary factory constructor for creating a new User instance
   factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
 }
@@ -33,25 +35,29 @@ class TodoList extends Notifier<List<Todo>> {
   List<Todo> build() =>
       []; //* Notifier does not receive anything unlike StateNotifer, but it needs to override the build method. In StateNotifer, you had to initialize the list of todos like this; TodoList(): super([]);
 
-  void add(String description) {
-    final now = DateTime.now();
-    final formattedNowDate = DateFormat.yMd().format(now);
-    final formattedNowTime = DateFormat.jm().format(now);
-    final formattedNowWithTime = '$formattedNowDate  $formattedNowTime';
-    final id = _uuid.v4();
-    final newTodo =
-        Todo(id: id, description: description, createdAt: formattedNowWithTime);
-    //* Since your state is immutable, you are not allowed to do like this; state.add(todo). Instead, create a new list that contains a new items and previous items
-    state = [
-      ...state,
-      newTodo,
-    ];
-    //* Instance Firestore
-    final db = FirebaseFirestore.instance;
-    //* Create Map<String, dynamic> for storing the data in firestore
-    final todo = newTodo.toJson();
-    //* Store data in firestore. Use set method instead of add because it allows overwrting the stored data. By adding id as document path, it can avoid overwriting the todo item added before
-    db.collection('todos').doc(id).set(todo);
+  Future<void> add(String description) async {
+    try {
+      final now = DateTime.now();
+      final id = _uuid.v4();
+      final newTodo = Todo(id: id, description: description, createdAt: now);
+      //* Instance Firestore
+      final db = FirebaseFirestore.instance;
+      //* Create Map<String, dynamic> for storing the data in firestore
+      final todo = newTodo.toJson();
+      //* Store data in firestore. Use set method instead of add because it allows overwrting the stored data. By adding id as document path, it can avoid overwriting the todo item added before
+      //* A new item should be added to Firestore before state = [...sate, newTodo,]; because if some error happned in the process of adding date to firestore (e.g., internet connection error etc), you should stop adding item to the state; otherwise the data in the state and the one in Firestore will be different.
+      db.collection('todos').doc(id).set(todo);
+
+      //* Since your state is immutable, you are not allowed to do like this; state.add(todo). Instead, create a new list that contains a new items and previous items
+      state = [
+        ...state,
+        newTodo,
+      ];
+    } catch (error, stackTrace) {
+      debugPrintStack(label: error.toString(), stackTrace: stackTrace);
+
+      rethrow;
+    }
   }
 
   void remove(Todo target) {
@@ -78,13 +84,15 @@ class TodoList extends Notifier<List<Todo>> {
     final db = FirebaseFirestore.instance;
 
     for (final todo in state) {
-      Map<String, dynamic> todoMap = {
-        'id': todo.id,
-        'description': todo.description,
-        'createdAt': todo.createdAt,
-        'completed': completed,
-      };
-      db.collection('todos').doc(id).update(todoMap);
+      if (todo.id == id) {
+        Map<String, dynamic> todoMap = {
+          'id': todo.id,
+          'description': todo.description,
+          'createdAt': todo.createdAt,
+          'completed': completed,
+        };
+        db.collection('todos').doc(id).update(todoMap);
+      }
     }
   }
 

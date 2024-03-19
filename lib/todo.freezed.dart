@@ -23,7 +23,8 @@ mixin _$Todo {
   String get description => throw _privateConstructorUsedError;
   String get id => throw _privateConstructorUsedError;
   bool get completed => throw _privateConstructorUsedError;
-  String get createdAt => throw _privateConstructorUsedError;
+  @DateTimeTimestampConverter()
+  DateTime get createdAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -35,7 +36,11 @@ abstract class $TodoCopyWith<$Res> {
   factory $TodoCopyWith(Todo value, $Res Function(Todo) then) =
       _$TodoCopyWithImpl<$Res, Todo>;
   @useResult
-  $Res call({String description, String id, bool completed, String createdAt});
+  $Res call(
+      {String description,
+      String id,
+      bool completed,
+      @DateTimeTimestampConverter() DateTime createdAt});
 }
 
 /// @nodoc
@@ -72,7 +77,7 @@ class _$TodoCopyWithImpl<$Res, $Val extends Todo>
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -84,7 +89,11 @@ abstract class _$$TodoImplCopyWith<$Res> implements $TodoCopyWith<$Res> {
       __$$TodoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String description, String id, bool completed, String createdAt});
+  $Res call(
+      {String description,
+      String id,
+      bool completed,
+      @DateTimeTimestampConverter() DateTime createdAt});
 }
 
 /// @nodoc
@@ -118,7 +127,7 @@ class __$$TodoImplCopyWithImpl<$Res>
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DateTime,
     ));
   }
 }
@@ -130,7 +139,7 @@ class _$TodoImpl with DiagnosticableTreeMixin implements _Todo {
       {required this.description,
       required this.id,
       this.completed = false,
-      required this.createdAt});
+      @DateTimeTimestampConverter() required this.createdAt});
 
   factory _$TodoImpl.fromJson(Map<String, dynamic> json) =>
       _$$TodoImplFromJson(json);
@@ -143,7 +152,8 @@ class _$TodoImpl with DiagnosticableTreeMixin implements _Todo {
   @JsonKey()
   final bool completed;
   @override
-  final String createdAt;
+  @DateTimeTimestampConverter()
+  final DateTime createdAt;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
@@ -196,10 +206,11 @@ class _$TodoImpl with DiagnosticableTreeMixin implements _Todo {
 
 abstract class _Todo implements Todo {
   factory _Todo(
-      {required final String description,
-      required final String id,
-      final bool completed,
-      required final String createdAt}) = _$TodoImpl;
+          {required final String description,
+          required final String id,
+          final bool completed,
+          @DateTimeTimestampConverter() required final DateTime createdAt}) =
+      _$TodoImpl;
 
   factory _Todo.fromJson(Map<String, dynamic> json) = _$TodoImpl.fromJson;
 
@@ -210,7 +221,8 @@ abstract class _Todo implements Todo {
   @override
   bool get completed;
   @override
-  String get createdAt;
+  @DateTimeTimestampConverter()
+  DateTime get createdAt;
   @override
   @JsonKey(ignore: true)
   _$$TodoImplCopyWith<_$TodoImpl> get copyWith =>

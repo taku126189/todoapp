@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'package:todo_app/providers/todo.dart';
 
@@ -22,6 +23,22 @@ class TodoScreen extends HookConsumerWidget {
     //? Every time some change happens to todoListProvider, this build method will rebuild. This means the entire Scaffold has to be recalculated again, which i think is redundant.
     final todos = ref.watch(todoListProvider);
     final newTodoController = useTextEditingController();
+
+    // void getItems() {
+    //   FirebaseFirestore.instance
+    //       .collection('todos')
+    //       .doc('991c8cbe-44b3-48a4-9cd5-fb63e9ca8825')
+    //       .get()
+    //       .then((DocumentSnapshot documentSnapshot) {
+    //     if (documentSnapshot.exists) {
+    //       Map<String, dynamic> storedData =
+    //           documentSnapshot.data() as Map<String, dynamic>;
+    //       print(storedData);
+    //     } else {
+    //       print('Document does not exist on the database');
+    //     }
+    //   });
+    // }
 
     void addItem() {
       final enteredText = newTodoController.text;
@@ -51,6 +68,12 @@ class TodoScreen extends HookConsumerWidget {
       newTodoController.clear();
     }
 
+    // CollectionReference accessTodoCollection =
+    //     FirebaseFirestore.instance.collection('todos');
+
+    // Future<DocumentSnapshot> loadTodos =
+    //     accessTodoCollection.doc('991c8cbe-44b3-48a4-9cd5-fb63e9ca8825').get();
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -65,10 +88,24 @@ class TodoScreen extends HookConsumerWidget {
                     // ? Why addTodoKey is necessary here?
                     key: addTodoKey,
                     controller: newTodoController,
-                    onSubmitted: (value) {
-                      //* A callback function for when the user are done editing (when pressing the enter key). OnSubmitted takes String so value is type String
-                      ref.read(todoListProvider.notifier).add(value);
-                      newTodoController.clear();
+                    //* A callback function for when the user are done editing (when pressing the enter key). OnSubmitted takes String so value is type String
+                    onSubmitted: (value) async {
+                      try {
+                        await ref.read(todoListProvider.notifier).add(value);
+                        newTodoController.clear();
+                      } catch (e) {
+                        //* lint says 'Do not use BuildContext in async. BuildContext is used for accessing information about where a widget is located in the widget location.
+                        //* This is because it might be possible that BuildContext points to an outdated or non-existent widget if the widget was disposed of or rebuilt while the async operation was performing.
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString()),
+                            ),
+                          );
+                        } else {
+                          return;
+                        }
+                      }
                     },
                   ),
                 ),
@@ -86,11 +123,25 @@ class TodoScreen extends HookConsumerWidget {
                     ),
                   ),
                 ),
+                // Container(
+                //   decoration: const BoxDecoration(
+                //       color: Colors.blue,
+                //       borderRadius: BorderRadius.all(Radius.circular(4))),
+                //   width: 60,
+                //   height: 40,
+                // child: IconButton(
+                //   onPressed: getItems,
+                //   icon: const Icon(
+                //     Icons.download,
+                //     color: Colors.white,
+                //   ),
+                // ),
+                // ),
               ],
             ),
             //* for loop. var i = 0: the initial value. It repeats until the condition (i < todos.length) is met. i++: this increments i by 1 after each iteration
             //* spread operator is used to spread the elements of todos.
-            //? Why spread operator is used? Maybe for creating a new list?
+            //* Why spread operator is used? A. For effetive dart usage (See https://dart.dev/effective-dart/usage#do-use-collection-literals-when-possible
             for (var i = 0; i < todos.length; i++) ...[
               if (i > 0)
                 const Divider(
@@ -146,6 +197,10 @@ class TodoItem extends HookConsumerWidget {
     //* This gives textField a focus
     final textFieldFocusNode = useFocusNode();
 
+    final date = todo.createdAt;
+    final formatter = DateFormat.yMd()..add_jm();
+    final formattedDate = formatter.format(date);
+
     //* Material gives you elevation like 3D visual effect
     return Material(
       color: Colors.white,
@@ -188,7 +243,7 @@ class TodoItem extends HookConsumerWidget {
                   controller: textEditingController,
                 )
               : Text(todo.description),
-          subtitle: Text(todo.createdAt.toString()),
+          subtitle: Text(formattedDate),
         ),
       ),
     );
